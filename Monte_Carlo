@@ -1,0 +1,60 @@
+import time
+import multiprocessing
+import math
+import random
+def check(interval_number,process_num,queue):
+
+    Phi=0.0
+    result=0
+
+    for _ in range(round(interval_number/process_num)):
+        x=random.uniform(-3,3)
+        y=random.uniform(-3,3)
+
+        if (x>0)and(y>=0):
+            Phi=math.atan(y/x)
+        elif (x>0)and(y<0):
+            Phi=math.atan(y/x)+2*math.pi
+        elif (x<0):
+            Phi=math.atan(y/x)+math.pi
+        elif (x==0)and(y<0):
+            Phi=math.pi*1.5
+        elif (x==0)and(y>0):
+            Phi=math.pi*0.5
+        else:
+            Phi=0
+
+        if math.sqrt((3*math.sin(Phi))**2)>math.sqrt((x)**2+(y)**2):
+                result += 1
+    queue.put(result/interval_number)
+
+if __name__ == '__main__' :
+
+    
+    result = 0
+    f = open("G:\enter1.txt", "r")
+    interval_number=float((f.readline()).replace('\n', ''))
+
+    
+
+    processes=[]
+    queue = multiprocessing.SimpleQueue()
+
+    process_num=4
+
+    start=time.perf_counter()
+    for i in range(process_num):
+        print(f'started in {round(time.perf_counter()-start)} second, used {process_num} cores')
+        p=multiprocessing.Process(target=check, args=[interval_number,process_num,queue])
+        p.start()
+        processes.append(p)
+
+    for process in processes:
+        process.join()
+
+    for process in processes:
+        result+=queue.get()
+
+    print(result*36)
+    print(f'Finished in {round(time.perf_counter()-start)} second')
+    f.close()
